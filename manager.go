@@ -56,6 +56,10 @@ func (m *Manager) Update(ctx context.Context, release *Release) error {
 // Continue will continue an update operation based on the provided update
 // flag.
 func (m *Manager) Continue(ctx context.Context) error {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
 	if *updateResumeFlag == "" {
 		return nil
 	}
