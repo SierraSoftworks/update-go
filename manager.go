@@ -18,8 +18,8 @@ type Manager struct {
 	// Application is the path to the application which should be updated.
 	Application string
 
-	// UpgradeApplication is the path to which a temporary upgrade version of the application will be downloaded.
-	UpgradeApplication string
+	// UpdateApplication is the path to which a temporary upgrade version of the application will be downloaded.
+	UpdateApplication string
 
 	// Variant is the variant of the application you wish to install. By default this will be the correct variant for your platform.
 	Variant *Variant
@@ -40,12 +40,12 @@ type Manager struct {
 // Update begins the update operation for a given release and will instruct the application
 // to terminate once the update is ready to be applied.
 func (m *Manager) Update(ctx context.Context, release *Release) error {
-	err := m.applier.Prepare(ctx, m.Source, release, m.Variant, m.UpgradeApplication)
+	err := m.applier.Prepare(ctx, m.Source, release, m.Variant, m.UpdateApplication)
 	if err != nil {
 		return err
 	}
 
-	err = m.launch(m.UpgradeApplication, PhaseReplace)
+	err = m.launch(m.UpdateApplication, PhaseReplace)
 	if err != nil {
 		return err
 	}
@@ -69,6 +69,11 @@ func (m *Manager) Continue(ctx context.Context) error {
 		return fmt.Errorf("update: unable to parse update state %w", err)
 	}
 
+	// We need to replace these since we may be in the temporary update application
+	// and they may be incorrect.
+	m.Application = state.Application
+	m.UpdateApplication = state.UpdateApplication
+
 	switch state.Phase {
 	case PhasePrepare:
 		return nil
@@ -82,7 +87,7 @@ func (m *Manager) Continue(ctx context.Context) error {
 }
 
 func (m *Manager) phaseReplace(ctx context.Context) error {
-	err := m.applier.Replace(ctx, m.UpgradeApplication, m.Application)
+	err := m.applier.Replace(ctx, m.UpdateApplication, m.Application)
 	if err != nil {
 		return err
 	}
@@ -96,7 +101,7 @@ func (m *Manager) phaseReplace(ctx context.Context) error {
 }
 
 func (m *Manager) phaseCleanup(ctx context.Context) error {
-	err := m.applier.Cleanup(ctx, m.UpgradeApplication)
+	err := m.applier.Cleanup(ctx, m.UpdateApplication)
 	if err != nil {
 		return err
 	}
@@ -107,7 +112,9 @@ func (m *Manager) phaseCleanup(ctx context.Context) error {
 func (m *Manager) launch(app string, phase Phase) error {
 	buf := bytes.NewBuffer([]byte{})
 	if err := json.NewEncoder(buf).Encode(&state{
-		Phase: phase,
+		Application:       m.Application,
+		UpdateApplication: m.UpdateApplication,
+		Phase:             phase,
 	}); err != nil {
 		return err
 	}

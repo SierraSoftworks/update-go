@@ -1,5 +1,7 @@
 package update
 
 type state struct {
-	Phase Phase `json:"phase"`
+	Application       string `json:"app"`
+	UpdateApplication string `json:"update"`
+	Phase             Phase  `json:"phase"`
 }
