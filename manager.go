@@ -34,6 +34,9 @@ type Manager struct {
 	// an update.
 	Shutdown func() error
 
+	// The Complete callback is used to inform the hosting application when an update has completed.
+	Complete func()
+
 	applier Applier
 }
 
@@ -104,6 +107,10 @@ func (m *Manager) phaseCleanup(ctx context.Context) error {
 	err := m.applier.Cleanup(ctx, m.UpdateApplication)
 	if err != nil {
 		return err
+	}
+
+	if m.Complete != nil {
+		m.Complete()
 	}
 
 	return m.shutdown()
