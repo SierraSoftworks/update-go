@@ -23,6 +23,7 @@ func TestGitHubSource(t *testing.T) {
 		for _, r := range rs {
 			assert.NotNil(t, r, "the release entries should not be nil")
 			assert.Contains(t, r.ID, r.Version.String(), "the version should be derived from the tag")
+			assert.NotEmpty(t, r.Changelog, "the changelog should not be empty")
 
 			totalVariants += len(r.Variants)
 

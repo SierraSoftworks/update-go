@@ -20,6 +20,7 @@ type githubSource struct {
 type githubRelease struct {
 	Name       string        `json:"name"`
 	TagName    string        `json:"tag_name"`
+	Body       string        `json:"body"`
 	Prerelease bool          `json:"prerelease"`
 	Assets     []githubAsset `json:"assets"`
 }
@@ -57,9 +58,10 @@ func (s *githubSource) Releases() ([]Release, error) {
 		}
 
 		out = append(out, Release{
-			ID:       release.TagName,
-			Version:  version,
-			Variants: s.getVariants(&release),
+			ID:        release.TagName,
+			Changelog: release.Body,
+			Version:   version,
+			Variants:  s.getVariants(&release),
 		})
 	}
 

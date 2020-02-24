@@ -9,6 +9,7 @@ import (
 // A Release describes a specific release of the software.
 type Release struct {
 	ID       string
+	Changelog string
 	Version  semver.Version
 	Variants []Variant
 }

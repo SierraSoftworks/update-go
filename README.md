@@ -48,6 +48,7 @@ func main() {
     availableUpdate := update.LatestUpdate(rs, version)
     if availableUpdate != nil {
         log.Infof("Update available: %s", availableUpdate.ID)
+        log.Infof("Changes: %s", availableUpdate.Changelog)
 
         err := mgr.Update(availableUpdate)
         if err != nil {
